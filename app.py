@@ -64,4 +64,23 @@ if uploaded_file is not None:
             st.success("Extracción completada:")
             st.text_area("Datos Extraídos (Listos para la BD):", value=response.text, height=300)
 
-            # ESTE ES EL PUNTO DONDE IRÍA LA FUNCIÓN DE GOOGLE SHEETS PARA GUARDAR LOS DATOS
+# app.py
+# ... (Todo el código anterior de configuración y Streamlit) ...
+
+# Este código se añade AL FINAL de tu app.py, DENTRO del bloque 'if uploaded_file is not None:'
+
+            # 4. Mostrar Resultados
+            data_extraida = response.text # Guardamos el texto extraído en una variable
+            st.success("Extracción completada:")
+            st.text_area("Datos Extraídos (Listos para la BD):", value=data_extraida, height=300)
+
+            # --- NUEVA SECCIÓN: FUNCIÓN PARA GUARDAR EN GOOGLE SHEETS ---
+
+            if st.button("Guardar Datos en Google Sheets"):
+                
+                # LLAMA A LA FUNCIÓN DE GUARDADO
+                if guardar_en_sheets(data_extraida):
+                    st.balloons() # Celebración visual
+                    st.success("🎉 Datos guardados exitosamente en la Hoja de Google!")
+                else:
+                    st.error("❌ Error al guardar datos. Revisa la configuración de la Hoja/Credenciales.")
