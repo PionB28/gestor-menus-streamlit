@@ -1,12 +1,30 @@
 # app.py
-# ... (Configuración de la API y el modelo) ...
+import streamlit as st
+from google import genai
+import os 
+from io import BytesIO
+
+# --- CONFIGURACIÓN DE LA IA (NECESARIA PARA EVITAR EL NAMEERROR) ---
+try:
+    # 1. Intenta leer la clave API del panel de "Secrets" de Streamlit Cloud
+    api_key = st.secrets["GEMINI_API_KEY"]
+except (KeyError, FileNotFoundError):
+    # Opción de respaldo si la clave no está configurada
+    api_key = os.getenv("GEMINI_API_KEY") 
+    
+if not api_key:
+    st.error("Error: La clave GEMINI_API_KEY no está configurada en Streamlit Secrets.")
+    st.stop() # Detiene la ejecución si no hay clave.
+
+# Inicializa el cliente de Gemini
+client = genai.Client(api_key=api_key)
 
 # --- INTERFAZ MULTIMODAL ---
 st.title("🍹 Gestor de Menús (OCR de Tragos)")
 st.caption("Sube una foto del menú de tragos y la IA extraerá los datos.")
 st.markdown("---")
 
-# 1. Componente de carga de archivos (Nuevo elemento)
+# 1. Componente de carga de archivos
 uploaded_file = st.file_uploader(
     "Sube una imagen del menú", 
     type=['png', 'jpg', 'jpeg'] # Tipos de archivo permitidos
@@ -31,7 +49,6 @@ if uploaded_file is not None:
             image_bytes = uploaded_file.read()
             
             # 3. LLAMADA A LA API CON IMAGEN
-            # La solicitud (contents) incluye tanto la imagen como el texto de las instrucciones
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=[
@@ -43,6 +60,7 @@ if uploaded_file is not None:
                 ]
             )
             
+            # 4. Mostrar Resultados
             st.success("Extracción completada:")
             st.text_area("Datos Extraídos (Listos para la BD):", value=response.text, height=300)
 
